@@ -3,17 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void exit_if(int cond, char* message) {
-    if (cond) {
-        perror(message);
-        exit(EXIT_FAILURE);
-    }
-}
+#define AUTH_PIPE "auth"
 
-ssize_t read_segment(int fd, char *line, size_t size, char delimiter = '\n') {
-    ssize_t i = 0;
+void exit_if(int cond, char* message);
 
-    while(read(fd, &line[i], 1) && line[i++] != delimiter);
-
-    return i;
-}
+ssize_t read_segment(int fd, char *line, size_t size, char delimiter);
