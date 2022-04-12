@@ -9,4 +9,4 @@ server: sdstored.c
 	gcc utils.o sdstored.o -o sdstored
 
 clean:
-	rm auth out_* in_*
+	rm auth term c2s_* s2c_*
