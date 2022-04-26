@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "utils.h"
+#include "communication.h"
 
 /*
 API:
@@ -28,23 +29,23 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    Auth msg = auth_new(getpid());
+    Comms msg = new_comms(getpid());
 
     // Create pipes
-    exit_if((mkfifo(msg.pipe_s2c, 0666) != 0), "create s2c");
-    exit_if((mkfifo(msg.pipe_c2s, 0666) != 0), "create c2s");
+    exit_if((mkfifo(msg.pipe_s2c, 0666) != 0), "create server to client");
+    exit_if((mkfifo(msg.pipe_c2s, 0666) != 0), "create client to server");
 
     // Open communication
     int auth = open(AUTH_PIPE, O_WRONLY);
     exit_if((auth == -1), "erro pipe auth");
-    write(auth, &msg, sizeof(Auth));
+    write(auth, &msg, sizeof(Comms));
     close(auth);
     printf("Authed %s\n", msg.pid);
 
     // Relay command
     int out = open(msg.pipe_c2s, O_WRONLY);
     exit_if((out == -1), "erro pipe out");
-    Cmd cmd = cmd_new(argc-1, argv);
+    Cmd cmd = new_cmd(argc-1, argv);
     write(out, &cmd, sizeof(Cmd));
     close(out);
 
