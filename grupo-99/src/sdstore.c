@@ -40,7 +40,6 @@ int main(int argc, char* argv[]) {
     exit_if((auth == -1), "erro pipe auth");
     write(auth, &msg, sizeof(Comms));
     close(auth);
-    printf("Authed %s\n", msg.pid);
 
     // Relay command
     int out = open(msg.pipe_c2s, O_WRONLY);
@@ -54,8 +53,8 @@ int main(int argc, char* argv[]) {
     exit_if((in == -1), "erro pipe in");
     Response res;
     do {
-        read(in, &res, sizeof(Response));
-        write(STDOUT_FILENO, res.line, res.sent);
+        if(read(in, &res, sizeof(Response)))
+            write(STDOUT_FILENO, res.line, res.sent);
     } while (res.sent);
     close(in);
 

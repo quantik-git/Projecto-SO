@@ -1,9 +1,11 @@
 #include "task.h"
 
-// Cria a task
-Task new_task(Comms msg, Cmd cmd) {
+
+Task new_task(Comms client, Cmd cmd) {
     Task new = malloc(sizeof(struct task));
-    new->msg = msg;
+    new->client = client;
+    new->count = 0;
+    new->task_pid = 0;
     new->priority = atoi(cmd.argv[1]);
     new->transform_count = cmd.argc-4;
     new->processing = 0;
@@ -17,20 +19,31 @@ Task new_task(Comms msg, Cmd cmd) {
     return new;
 }
 
-// Insere de forma ordenada por prioridade
 Task add_task(Task tasks, Task new) {
     if (tasks == NULL) {
         tasks = new;
     } else {
-        Task ptr;
-        for (ptr = tasks; ptr->prox != NULL; ptr = ptr->prox) {
-            if (new->priority > (ptr->prox)->priority)
+        Task ptr, ant = NULL;
+        for (ptr = tasks; ptr != NULL; ant = ptr, ptr = ptr->prox) {
+            if (new->priority > ptr->priority)
                 break;
         }
 
-        new->prox = ptr->prox;
-        ptr->prox = new;
+        if (ant == NULL) {
+            new->prox = ptr;
+            tasks = new;
+        } else {
+            new->prox = ant->prox;
+            ant->prox = new;
+            
+        }
     }
+
+    // fprintf(stderr, "here\n");
+    // for (Task ptr = tasks; ptr != NULL; ptr = ptr->prox)
+    //     fprintf(stderr, "%d %d ->", ptr->task_pid, ptr->priority);
+    
+    // fprintf(stderr, "\n%d\n", tasks->priority);
 
     return tasks;
 }
@@ -40,7 +53,7 @@ Task rem_task(Task tasks, Task task) {
 
     Task ant, ptr;
     for (ant = NULL, ptr = tasks; ptr != NULL; ant = ptr, ptr = ptr->prox) {
-        if (!strcmp(task->msg.pid, ptr->msg.pid))
+        if (!strcmp(task->client.pid, ptr->client.pid))
             break;
     }
 

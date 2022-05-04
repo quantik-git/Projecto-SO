@@ -5,8 +5,6 @@
 #include <string.h>
 
 #define AUTH_PIPE "auth"
-#define TERM_PIPE "term.txt"
-
 
 // max pid 4194304
 typedef struct communication {
@@ -31,4 +29,5 @@ Comms new_comms(int pid);
 Cmd new_cmd(int argc, char* argv[]);
 
 Response new_res(char *line);
+
 #endif

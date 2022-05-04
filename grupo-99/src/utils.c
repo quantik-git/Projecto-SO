@@ -14,3 +14,10 @@ ssize_t read_segment(int fd, char *line, size_t size, char delimiter) {
 
     return i;
 }
+
+int size_of_file(char *filename) {
+    struct stat st;
+    stat(filename, &st);
+
+    return st.st_size;
+}
