@@ -12,7 +12,7 @@
 [toms-pic]: https://github.com/TomasCampinho.png?size=120
 
 
-## 📎 Resume
+## 📎 Summary
 
 Pretende-se implementar um serviço que permita aos utilizadores armazenar uma cópia dos seus ficheiros de forma segura e eficiente, poupando espaço de disco. Para tal o serviço disponibilizará funcionalidades de compressão e cifragem dos ficheiros a serem armazenados.
 
@@ -42,14 +42,20 @@ Se quiser testar as transformações com o servidor a correr poderá executar um
 ```bash
 $ ./sdstore proc-file <priority> ../samples/file-a ../samples/file-a-output bcompress nop gcompress encrypt
 ```
-**Note que:
 
-  *  O servidor deverá dar prevalência a pedidos com maior prioridade. Para realizar esta funcionalidade, cada operação deve ser acompanhada da sua prioridadeo argumento **priority** (identificadas como inteiros de 0 a 5, em que 5 atribui prioridade máxima)
+De forma geral:
+```bash
+$ ./sdstore proc-file priority input-filename output-filename transformation-id-1 transformation-id-2 ...
+```
+
+
+**Note que**:
+
+  *  O servidor deverá dar prevalência a pedidos com maior prioridade. Para realizar esta funcionalidade, cada operação deve ser acompanhada da sua prioridade o argumento **priority** (identificadas como inteiros de 0 a 5, em que 5 atribui prioridade máxima)
   * para recuperar o conteúdo original do ficheiro file-a, a operação *proc-file* deve invocar as transformações de compressão e cifra pela ordem inversa.
   * a transformação **nop** é especial, uma vez que é idempotente (i.e., pode ser aplicada em qualquer ordem e entre quaisquer transformações sem modificar o resultado esperado).
 
-O cliente pode consultar (comando status), a qualquer instante, o estado de funcionamento do servidor. Nomeadamente,
-os pedidos de processamento em execução, bem como, o estado de utilização das transformações:
+O cliente pode consultar (comando status), a qualquer instante, o estado de funcionamento do servidor. Nomeadamente, os pedidos de processamento em execução, bem como, o estado de utilização das transformações:
 
 ```bash
 $ ./sdstore status
