@@ -1,0 +1,267 @@
+% !TeX spellcheck = pt_PT
+\documentclass[a4paper]{report}
+\usepackage[portuguese]{babel}
+\usepackage{a4wide}
+\usepackage[utf8x]{inputenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{indentfirst}
+\usepackage{float}
+\usepackage{color}
+
+\definecolor{red}{rgb}{0.6,0,0} 
+\definecolor{blue}{rgb}{0,0,0.6}
+\definecolor{green}{rgb}{0,0.8,0}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{cloudwhite}{rgb}{0.9412, 0.9608, 0.8471} 
+\definecolor{davysgrey}{rgb}{0.33, 0.33, 0.33}
+\definecolor{deepfuchsia}{rgb}{0.76, 0.33, 0.76}
+\definecolor{deepskyblue}{rgb}{0.0, 0.75, 1.0}
+
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+
+\setlength{\parskip}{1em}
+
+\title{Sistemas Operativos - Trabalho Prático\\
+	\large Grupo nº16}
+
+\author{David José de Sousa Machado  \\ (A91665) \and Miguel Ângelo Alves de Freitas \\ (A91635)
+         \and Tomás Vaz de Carvalho Campinho \\ (A91668)
+       } %autores do documento
+       
+\date{\today} %data
+
+\begin{document}
+	\begin{minipage}{0.9\linewidth}
+        \centering
+		\includegraphics[width=0.4\textwidth]{um.jpg}\par\vspace{1cm}
+		\href{https://www.uminho.pt/PT}
+		{\scshape\LARGE Universidade do Minho} \par
+		\vspace{0.6cm}
+		\href{https://lcc.di.uminho.pt}
+		{\scshape\Large Licenciatura em Ciências da Computação} \par
+		\maketitle
+		\begin{figure}[H]
+			\includegraphics[width=0.32\linewidth]{David.jpg}
+			\includegraphics[width=0.32\linewidth]{miguel.png}
+			\includegraphics[width=0.32\linewidth]{tomas.jpg}
+		\end{figure}
+	\end{minipage}
+	
+	\tableofcontents
+	
+	\pagebreak
+	
+	\chapter{Introdução e principais desafios}
+	
+	O objetivo deste relatório é explicar as nossas escolhas/soluções para os problemas apresentados neste trabalho, no âmbito deste curso. Para esta tarefa tivemos que implementar uma Arquitetura Cliente/Servidor capaz de lidar com várias solicitações simultâneas para que permita aos utilizadores armazenar uma cópia dos seus ficheiros de forma segura e eficiente, poupando espaço de disco. Para tal o serviço disponibilizará funcionalidades de compressão e cifragem dos ficheiros a serem armazenados.
+
+	Ainda, deverá ser possível consultar as tarefas de processamento de ficheiros a serem efetuadas num dado momento.
+	
+	Esta implementação é constituída por um servidor e por um cliente que deverão comunicar por pipes com nome, um envia comandos para o servidor, e o outro envia o output dos comandos do servidor para o cliente.
+	
+	
+	\chapter{Funcionalidades disponíveis}
+	\section{Cliente}
+	O cliente é o programa que aceita a entrada do usuário e a envia para o servidor a ser processado.
+	
+	O cliente tem duas funcionalidades: status e proc-file. 
+	
+	No lado do servidor, garantimos cuidadosamente que qualquer entrada incorreta - que não seguiu o formato desejado - não vai para o servidor, ao invés disso nós analisamos de que forma está com defeito e enviamos ao cliente um erro apropriado mensagem. Todos os casos em que considerar:
+	
+    \begin{itemize}
+        \item Um comando não é uma $proc-file$ nem um $status$.
+        \item Um comando de $status$ tem argumentos extras.
+        \item Um comando de $proc-file$ não tem entrada, saída e pelo menos uma transformação.
+    \end{itemize}
+    
+    Na ausência de argumentos o cliente recebe uma mensagem a explicar a interface da 
+aplicação.
+	
+	\subsection{Status}
+	Esta tarefa é executada usando
+
+    \begin{lstlisting}[language=bash,caption={}]
+$ ./sdstored status
+\end{lstlisting}
+
+    e mostra o estado atual do servidor (quais tarefas estão a ser executadas e
+a atual alocação de recursos):
+	\begin{lstlisting}[language=bash,caption={}]
+$ ./sdstored status
+transf nop: 0/3 (running/max)
+transf bcompress: 0/4 (running/max)
+transf bdecompress: 0/4 (running/max)
+transf gcompress: 0/2 (running/max)
+transf gdecompress: 0/2 (running/max)
+transf encrypt: 0/2 (running/max)
+transf decrypt: 0/2 (running/max)
+\end{lstlisting}
+
+    \subsection{proc-file}
+    
+    Existem diferentes tipos de transformações que podem ser aplicadas:
+    \begin{itemize}
+        \item \textbf{bcompress / bdecompress}. Comprime / descomprime dados com o formato bzip.
+        \item \textbf{gcompress / gdecompress}. Comprime / descomprime dados com o formato gzip.
+        \item \textbf{encrypt / decrypt}. Cifra / decifra dados.
+        \item \textbf{nop}. Copia dados sem realizar qualquer transformação.
+    \end{itemize}
+	Esta tarefa é executada usando
+	
+	\begin{lstlisting}[language=bash,caption={}]
+$ ./sdstore proc-file priority input-filename output-filename transformation-id-1 transformation-id-2 ...
+
+\end{lstlisting}
+
+    e gera o resultado da execução do arquivo de entrada por meio de um ou várias transformações. Ele também envia o estado da tarefa para a $bash$:
+    
+    \begin{lstlisting}[language=bash,caption={}]
+$ ./sdstore proc-file <priority> ../samples/file-a ../samples/file-a-output bcompress nop gcompress encrypt nop
+pending
+processing
+concluded (bytes-input: 2048, bytes-output: 1024)
+\end{lstlisting}
+
+    \section{Cliente}
+    O Servidor deve ser executado, antes de qualquer cliente, e é capaz de receber solicitações de processamento, processá-las e enviar notificação ao usuário. É executado com:
+\begin{lstlisting}[language=bash,caption={}]
+$ ./sdstored ../etc/sdstored.conf ../bin/sdstore-transformations
+\end{lstlisting}
+
+    Funciona até ser fechado manualmente. Termina graciosamente ao receber um SIGINT (principalmente por meio de um CTRL+C).
+    
+    O programa servidor recebe dois argumentos pela linha de comando: 
+    
+    \begin{itemize}
+        \item O primeiro corresponde ao caminho para um ficheiro de configuração que é composto por uma sequência de linhas de texto, uma por tipo de transformação, contendo:
+        \begin{itemize}
+            \item identificador da transformação (para simplificar, o mesmo pode corresponder ao nome do ficheiro executável que a implementa)
+            \item número máximo de instâncias de uma certa transformação que podem executar concorrentemente num determinado período de tempo
+        
+        \end{itemize}
+            Segue-se um exemplo do conteúdo do ficheiro:
+    
+    \begin{lstlisting}[language=bash,caption={}]
+nop 3
+bcompress 4
+bdecompress 4
+gcompress 2
+gdecompress 2
+encrypt 2
+decrypt 2
+
+\end{lstlisting}
+
+    \item O segundo argumento corresponde ao caminho para a pasta onde os executáveis das transformações estão guardados.
+
+    \end{itemize}
+
+
+
+	\chapter{Arquitetura}
+	\section{Cliente-to-server communication}
+	Quando executado, o servidor cria um pipe nomeado para comunicação cliente-servidor. Por causa do protocolo de solicitação, um único pipe pode suportar comunicações para todos os clientes. 
+	
+	Para habilitar a comunicação servidor-cliente, o cliente cria um pipe nomeado nomeado após seu próprio PID. 
+
+    O cliente então envia ao servidor uma estrutura de dados contendo seu PID (portanto mais tarde o servidor pode procurar o dono da requisição e enviar a mensagem apropriada), um array com os argumentos que foi dado na execução e o número desses argumentos também. Em seguida, ele fecha a extremidade do pipe e começa a ler (bloquear) do pipe servidor-cliente que tinha anteriormente.
+
+    No caso de um pedido de transformação, após a leitura da estrutura do pedido enviado pelo cliente, o
+    servidor abre o pipe com o nome do PID do cliente e escreve a mensagem 'pendente', que o cliente lê e imprime em seu stdout, retorna ao seu estado de leitura de bloqueio anterior, isso inicia a fase de processamento de um pedido de aplicação de transformações que explicaremos detalhadamente mais adiante.
+    \newpage
+    \section{Parsing}
+    
+    Após receber a solicitação e informar o cliente sobre sua situação de pendência, o servidor começa a trabalhar no pedido.
+    
+    Ele extrai os nomes das transformações solicitadas. Em seguida, verifica para certificar-se de que são válidos (de acordo com o arquivo de configuração do servidor): se não estiverem, ele envia uma mensagem de volta para o cliente e volta a ler de para o pipe cliente-servidor, como explicamos anteriormente. 
+    
+    No entanto, se forem válidos, procede-se à sua fusão; por outras palavras, cria uma nova estrutura que contém tuplos de um nome de uma transformação e o número de vezes que é usado. Essa estrutura é crucial para processar os pedidos em uma fação abstrata, pois podemos nos por em múltiplas verificações e alocação e desalocação de recursos para solicitações de aplicar transformações únicas e múltiplas.
+    
+    Assim, de acordo com a menção logística acima, esta lista de tuplos é então usado para verificar se é possível processar a solicitação: se numa solicitação uma transformação é usado mais vezes do que a configuração do servidor permite, essa solicitação é considerado impossível, descartado e o cliente notificado (como mencionamos acima, também).
+    
+    \section{Priority line}
+    
+    Para a funcionalidade de prioridades nós fizemos com que o programa ao solicitar um novo processo(de arcordo com o arquivo de configuração do servidor) insere de forma ordenada de acordo com a prioridade, e para isso criamos uma lista ligada para conseguir fazer com que os processos sejam inseridos de forma ordenada.
+    
+    \section{Processo}
+    
+    Se a solicitação passar em todas as verificações anteriores, ela será representada em um processo de estrutura. Essa estrutura contém todos os dados sobre uma solicitação que será processado: o PID do cliente (usado para procurar o nome do qual a comunicação servidor-cliente acontecerá), o número de transformações que será necessário (útil na hora de verificar a disponibilidade do servidor para um processo e alocar e desalocar recursos rapidamente, sempre de acordo com o arquivo de configuração), os arquivos de entrada e saída e a lista de tuplos. Essa estrutura é então colocado em uma fila e aguarda o processamento.
+    
+    \section{Queue}
+    A fila é uma matriz multidimensional. Pensamos nisso como uma matriz com 16 linhas e 1024 colunas. Um processo é armazenado nele de acordo com quantas transformações que usa. Um processo com n transformações será anexado à linha n-1; se tiver 16 transformações ou mais, ele será armazenado na linha 15. A razão pela qual este método foi escolhido será discutido na próxima secção.
+	
+	\section{Processamento}
+	
+	Após analisar o pedido e colocar sua representação de processo em uma fila, o servidor inicia o processamento da referida fila.
+    
+    O servidor possui um contador que armazena o número de slots de transformações disponíveis, ou seja, os slots de transformações não são reservados por outro processo.
+
+    Como ele conhece o número máximo de slots de transformações que pode alocar naquele momento, digamos, n, ele precisa apenas processar a fila das linhas 0 a n-1. Dessa forma, não precisamos percorrer a restante da fila e validar esses processos, pois sabemos desde o início que nunca haverá slots de transformações suficientes disponíveis.
+
+    Tendo estabelecido o intervalo pelo qual percorrer a fila, o servidor começa a percorrer a linha 0 e valida e processa cada processo. Ele faz isso até que a fila esteja vazia ou não haja mais transformações disponíveis
+    
+    Quando a fila está vazia, o servidor aguarda uma leitura de bloqueio (do pipe cliente-servidor) até que outro cliente envie outra solicitação.
+
+    \begin{enumerate}
+        \item verifica a disponibilidade da transformação: o servidor verifica se todas as transformações que o processo irá necessitar estão disponíveis (se não estiverem, o processo permanece na fila)
+        \item são reservados as transformações que o processo necessita;
+        \item uma mensagem é enviada ao cliente informando que o processo será iniciado em processamento;
+        \item a execução do processo é iniciada
+    \end{enumerate}
+    
+    \subsection{Executar apenas 1 transformação}
+    A logística para esta execução foi bastante simples. Como só tivemos a necessidade de realizar uma aplicação da transformação, apenas tivemos que abrir tanto a entrada e saída, duplique o $STD_{IN}$ e o $STD_{OUT}$ para apontar para seus descritores de arquivo, respetivamente, feche-os e execute a transformação usando a concatenação da pasta fornecida na execução do servidor e o binário da transformação fornecido pelo arquivo de configuração e obtido de seu nome que foi usado pelo usuário para invocá-lo.
+    
+    \subsection{Executar processo de várias transformações}
+    Esta parte era um pouco mais complicadas. Para fazer a aplicação de várias transformações precisávamos executar cada execução em seu próprio processo e comunicar entre as transformações usando pipes anónimos para criar um pipeline de streaming para realizar essa tarefa de maneira ideal. Digamos que precisamos realizar N transformações, isso significa que temos que usar N-1 pipes, onde precisamos codificar apenas 3 situações diferentes:
+    
+    \begin{enumerate}
+        \item \textbf{a primeira transformação} lê a partir do arquivo de entrada (usando abertura e duplicação do descritor de arquivo como acima) e grava na extremidade de entrada do primeiro pipe (usando abertura e duplicação do descritor de arquivo como acima)
+        \item \textbf{a ultima transformação} lê a partir da extremidade de gravação do último pipe e grava no arquivo de saída (usando abertura e duplicação do descritor de arquivo como acima)
+        \item \textbf{todos os outros} no meio, se necessário (3 ou mais transformações), lê o pipe anterior e escreve para o próximo
+
+    \end{enumerate}
+    Isso foi feito com uma matriz de pipes usando um loop for de 0 a N -1 transformações e lembre-se de que as extremidades de pipes não usadas em cada etapa precisavam ser fechadas antes de qualquer execução da transformação (usando execl da mesma forma).
+
+      
+	\chapter{Conclusão}
+	
+	Como é possível constatar, o nosso trabalho possui todas as funcionalidades pedidas a funcionar perfeitamente, para além da funcionalidade avançada. A nível geral, e tendo em conta o que foi explicado nos capítulos anteriores, como grupo achamos que todos os objetivos foram cumpridos e apesar das dificuldades que fomos encontrando o grupo conseguiu superar, sempre com um olhar crítico e a pensar no próximo passo. Acreditamos que respondemos de forma correta ao problema apresentado pela equipa docente da disciplina.
+	
+	Este trabalho está longe de ser perfeito, ignoramos o uso de memória dinâmica nas nossas estruturas ao longo do projeto. Isso significa que haverá sempre algum limite rígido para o que o servidor e os clientes podem fazer, mas achamos que vale a pena neste caso, pois reduz significativamente a complexidade e o tamanho do código e nos permite focar nos problemas essenciais que sentimos que eram mais importantes para este curso. Há também, com certeza, muitas outras otimizações que podem ser feitas em termos de memória e desempenho, como implementar algumas das nossas estruturas como mapas ou tabelas de hash, árvores binárias, min-heaps (para escolher processos de forma eficiente em vários filtros logísticos). 
+	
+	
+
+\end{document}
