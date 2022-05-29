@@ -160,7 +160,9 @@ void fork_off(Task task) {
 }
 
 void apply_transf(Task task) {
-    sleep(10); // para testar concorrência
+    // para testar concorrência
+    sleep(TESTING);
+
     int pipe = open(task->client.pipe_s2c, O_WRONLY);
 
     Response res = new_res("Processing\n");

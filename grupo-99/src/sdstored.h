@@ -5,6 +5,7 @@
 #include "transform.h"
 #include "communication.h"
 
+#define TESTING 0
 #define READ 0
 #define WRITE 1
 
