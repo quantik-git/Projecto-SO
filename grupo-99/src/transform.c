@@ -17,7 +17,8 @@ int load_transforms(char *file, Transform transf[]) {
 }
 
 /**
- * -1 impossible
+ * -2 transformation doesn't exist
+ * -1 too many transformations of the same type
  *  0 not available
  *  1 available
  */
@@ -35,6 +36,19 @@ int check_available(Task t, Transform transf[], int size) {
         } else if ((count + transf[i].atual) > transf[i].max) {
             return 0;
         }
+    }
+
+    for (int i = 0; i < t->transform_count; i++) {
+        int count = 0;
+        for (int j = 0; j < size; j++) {
+            if (!strcmp(transf[j].nome, t->transforms[i])) {
+                count++;
+                break;
+            }
+        }
+
+        if (!count)
+            return -2;
     }
 
     return 1;

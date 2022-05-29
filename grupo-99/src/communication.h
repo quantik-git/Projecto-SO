@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define AUTH_PIPE "auth"
+#define AUTH_PIPE "./tmp/auth"
 
 // max pid 4194304
 typedef struct communication {

@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     transf_max = load_transforms(argv[1], transf);
     path = strdup(argv[2]);
 
-    exit_if(mkfifo(AUTH_PIPE, 0666) == -1, "main fifo creation");
+    exit_if((mkfifo(AUTH_PIPE, 0666) != 0), "main fifo creation");
     int auth = open(AUTH_PIPE, O_RDONLY | O_NONBLOCK);
 
     while (isRunning) {
@@ -74,8 +74,13 @@ void proc_file(Comms msg, Cmd cmd) {
     Task task = new_task(msg, cmd);
 
     int availability = check_available(task, transf, transf_max);
-    if (availability == -1) {
-        res = new_res("Too many transformations required\n");
+    if (availability == -2) {
+        res = new_res("One or more transformations does not exist\n");
+        write(pipe, &res, sizeof(Response));
+        res = new_res("");
+        write(pipe, &res, sizeof(Response));
+    }else if (availability == -1) {
+        res = new_res("One or more transformations is over the limit\n");
         write(pipe, &res, sizeof(Response));
         res = new_res("");
         write(pipe, &res, sizeof(Response));
@@ -155,7 +160,7 @@ void fork_off(Task task) {
 }
 
 void apply_transf(Task task) {
-    sleep(25); // para testar concorrencia
+    sleep(10); // para testar concorrência
     int pipe = open(task->client.pipe_s2c, O_WRONLY);
 
     Response res = new_res("Processing\n");

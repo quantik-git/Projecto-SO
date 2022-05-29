@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #include "utils.h"
 #include "communication.h"
@@ -24,7 +25,9 @@ int main(int argc, char* argv[]) {
     char help_message[] = "./sdstore status\n"
         "./sdstore proc-file priority input-filename output-filename transformation-id-1 transformation-id-2 ...\n";
 
-    if (!(argc >= 2 && !strcmp(argv[1], "status")) && !(argc >= 6 && !strcmp(argv[1], "proc-file"))) {
+    signal(SIGINT, SIG_IGN);
+
+    if (!(argc >= 2 && !strcmp(argv[1], "status")) && !(argc >= 5 && !strcmp(argv[1], "proc-file"))) {
         write(STDOUT_FILENO, help_message, sizeof(help_message));
         return EXIT_SUCCESS;
     }
@@ -44,7 +47,7 @@ int main(int argc, char* argv[]) {
     // Relay command
     int out = open(msg.pipe_c2s, O_WRONLY);
     exit_if((out == -1), "erro pipe out");
-    Cmd cmd = new_cmd(argc-1, argv);
+    Cmd cmd = new_cmd(argc, argv);
     write(out, &cmd, sizeof(Cmd));
     close(out);
 
